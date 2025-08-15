@@ -1,4 +1,4 @@
-name: github-pages
+name: Build & Deploy docs
 
 on:
   push:
@@ -18,22 +18,21 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      # 必需：配置 Pages 环境
-      - uses: actions/configure-pages@v5
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-      # 生成首页，顺便打印调试信息
-      - name: Build docs index
+      - name: Generate docs (index.html)
         run: |
-          python3 --version
-          ls -la
-          python3 scripts/gen_docs.py
+          python scripts/gen_docs.py
           test -f index.html && echo "index.html OK" || (echo "index.html missing" && exit 1)
-          head -n 20 index.html
 
-      # 打包站点
-      - uses: actions/upload-pages-artifact@v3
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
           path: .
 
@@ -44,5 +43,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - id: deployment
+      - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4
